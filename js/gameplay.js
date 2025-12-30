@@ -107,11 +107,53 @@ export class Gameplay {
         });
 
         this.updateHealthBars();
+        this.checkAetherWellControl();
     }
 
-    // Skill-shot logic (simplified)
-    castSkillShot(start, end, type) {
-        console.log(`Casting ${type} from`, start, 'to', end);
-        // Implementation for meteor or gravity pull
+    // Skill-shot logic: Meteor Strike
+    castMeteor(targetPos) {
+        if (this.mana < 5) return;
+        this.mana -= 5;
+
+        const meteorGeo = new THREE.SphereGeometry(0.5, 16, 16);
+        const meteorMat = new THREE.MeshBasicMaterial({ color: 0xff4500 });
+        const meteor = new THREE.Mesh(meteorGeo, meteorMat);
+        meteor.position.set(targetPos.x, 10, targetPos.z);
+        this.graphics.scene.add(meteor);
+
+        // Animation logic would go here, for now immediate impact
+        setTimeout(() => {
+            this.units.forEach(unit => {
+                const dist = unit.mesh.position.distanceTo(targetPos);
+                if (dist < 3) {
+                    unit.hp -= 500;
+                }
+            });
+            this.graphics.scene.remove(meteor);
+        }, 500);
+    }
+
+    checkAetherWellControl() {
+        let playerCount = 0;
+        let enemyCount = 0;
+        
+        this.units.forEach(unit => {
+            const dist = unit.mesh.position.distanceTo(new THREE.Vector3(0, 0, 0));
+            if (dist < 2) {
+                if (unit.isPlayer) playerCount++;
+                else enemyCount++;
+            }
+        });
+
+        if (playerCount > enemyCount) {
+            this.manaRate = 0.02; // Double mana
+            this.graphics.aetherWell.material.color.set(0x00ffff);
+        } else if (enemyCount > playerCount) {
+            this.manaRate = 0.005; // Slower mana
+            this.graphics.aetherWell.material.color.set(0xff0000);
+        } else {
+            this.manaRate = 0.01;
+            this.graphics.aetherWell.material.color.set(0xff00ff);
+        }
     }
 }
