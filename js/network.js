@@ -18,15 +18,23 @@ export const Network = {
      * @returns {Promise}
      */
     async auth(email, pass) {
+        console.log("Attempting auth for:", email);
         return new Promise((resolve, reject) => {
+            // Gun.js auth can be slow, so we set a timeout
+            const timeout = setTimeout(() => {
+                reject("Network timeout. Please try again.");
+            }, 10000);
+
             user.auth(email, pass, (ack) => {
+                clearTimeout(timeout);
                 if (ack.err) {
-                    // If auth fails, try creating the user
+                    console.log("Auth failed, attempting to create user...");
                     user.create(email, pass, (createAck) => {
                         if (createAck.err) {
+                            console.error("Create error:", createAck.err);
                             reject(createAck.err);
                         } else {
-                            // After creation, auth again
+                            console.log("User created successfully, logging in...");
                             user.auth(email, pass, (authAck) => {
                                 if (authAck.err) reject(authAck.err);
                                 else {
@@ -37,6 +45,8 @@ export const Network = {
                         }
                     });
                 } else {
+                    console.log("Auth successful!");
+                    this.initUserData();
                     resolve(ack);
                 }
             });

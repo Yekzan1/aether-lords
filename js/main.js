@@ -30,11 +30,16 @@ class Game {
 
             try {
                 btnLogin.innerText = 'AUTHENTICATING...';
+                btnLogin.disabled = true;
+                console.log("Starting auth process...");
                 await Network.auth(email, pass);
+                console.log("Auth process finished, starting game...");
                 this.startGame();
             } catch (err) {
-                alert('Auth Error: ' + err);
+                console.error("Login error:", err);
+                alert('Auth Error: ' + err + "\n\nTip: If it hangs, try refreshing or using a different email/pass.");
                 btnLogin.innerText = 'ENTER ARENA';
+                btnLogin.disabled = false;
             }
         });
     }
