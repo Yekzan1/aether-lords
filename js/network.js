@@ -1,119 +1,108 @@
+import { loginUser, registerUser, checkAuthState } from './network.js';
+import { initGraphics, animate } from './graphics.js';
+import { initGameLogic } from './gameplay.js';
+
+// --- ÉLÉMENTS DE L'INTERFACE (UI) ---
+const loginScreen = document.getElementById('login-screen');
+const loginBtn = document.getElementById('login-btn');
+const signupBtn = document.getElementById('signup-btn');
+const emailInput = document.getElementById('email-input');
+const passInput = document.getElementById('pass-input');
+const loadingScreen = document.getElementById('loading-screen');
+
 /**
- * AETHER LORDS - Network Module
- * Handles Gun.js + SEA for authentication and P2P synchronization.
+ * Initialisation au chargement de la page
  */
+window.addEventListener('DOMContentLoaded', () => {
+    console.log("🚀 Aether Lords: Initialisation...");
 
-// Gun.js is loaded via CDN in index.html, so we access it globally
-const gun = Gun(['https://gun-manchester-gb.herokuapp.com/gun', 'https://gun-us.herokuapp.com/gun']);
-const user = gun.user().recall({sessionStorage: true});
+    // 1. Écouteurs pour le système de compte
+    setupEventListeners();
 
-export const Network = {
-    gun,
-    user,
+    // 2. Vérifier si l'utilisateur est déjà connecté (Auto-login)
+    checkAuthState((user) => {
+        if (user) {
+            console.log("✅ Utilisateur déjà authentifié :", user.alias);
+            startGame();
+        }
+    });
+});
 
-    /**
-     * Authenticate or Create User
-     * @param {string} email 
-     * @param {string} pass 
-     * @returns {Promise}
-     */
-    async auth(email, pass) {
-        console.log("Attempting auth for:", email);
-        return new Promise((resolve, reject) => {
-            // Gun.js auth can be slow, so we set a timeout
-            const timeout = setTimeout(() => {
-                reject("Network timeout. Please try again.");
-            }, 10000);
+/**
+ * Gestion des clics sur les boutons de connexion
+ */
+function setupEventListeners() {
+    // Bouton SE CONNECTER
+    loginBtn.addEventListener('click', () => {
+        const email = emailInput.value;
+        const pass = passInput.value;
 
-            user.auth(email, pass, (ack) => {
-                clearTimeout(timeout);
-                if (ack.err) {
-                    console.log("Auth failed, attempting to create user...");
-                    user.create(email, pass, (createAck) => {
-                        if (createAck.err) {
-                            console.error("Create error:", createAck.err);
-                            reject(createAck.err);
-                        } else {
-                            console.log("User created successfully, logging in...");
-                            user.auth(email, pass, (authAck) => {
-                                if (authAck.err) reject(authAck.err);
-                                else {
-                                    this.initUserData();
-                                    resolve(authAck);
-                                }
-                            });
-                        }
-                    });
+        if (email && pass) {
+            showLoading(true);
+            loginUser(email, pass, (success, error) => {
+                if (success) {
+                    startGame();
                 } else {
-                    console.log("Auth successful!");
-                    this.initUserData();
-                    resolve(ack);
+                    showLoading(false);
+                    alert("Échec de connexion : " + error);
                 }
             });
-        });
-    },
+        } else {
+            alert("Veuillez remplir tous les champs.");
+        }
+    });
 
-    /**
-     * Initialize default user data if it doesn't exist
-     */
-    initUserData() {
-        user.get('gamedata').once((data) => {
-            if (!data) {
-                user.get('gamedata').put({
-                    trophies: 0,
-                    level: 1,
-                    starterDeck: true,
-                    lastLogin: Date.now()
-                });
-            }
-        });
-    },
+    // Bouton S'INSCRIRE
+    signupBtn.addEventListener('click', () => {
+        const email = emailInput.value;
+        const pass = passInput.value;
 
-    /**
-     * Matchmaking logic
-     * @param {Function} onMatchFound 
-     */
-    findMatch(onMatchFound) {
-        const matchmaking = gun.get('aether_matchmaking');
-        const myId = user.is.pub;
+        if (email && pass) {
+            showLoading(true);
+            registerUser(email, pass, (success, error) => {
+                showLoading(false);
+                if (success) {
+                    alert("Compte créé avec succès ! Connectez-vous maintenant.");
+                } else {
+                    alert("Erreur d'inscription : " + error);
+                }
+            });
+        } else {
+            alert("Veuillez remplir tous les champs.");
+        }
+    });
+}
 
-        // Register self in matchmaking
-        matchmaking.get(myId).put({
-            status: 'searching',
-            timestamp: Date.now(),
-            username: user.is.alias
-        });
+/**
+ * Lance le moteur du jeu (3D + Logique)
+ */
+function startGame() {
+    console.log("🎮 Lancement du monde 3D...");
+    
+    // Cacher l'UI de connexion
+    loginScreen.classList.add('hidden');
+    showLoading(true);
 
-        // Listen for other players
-        matchmaking.map().once((peer, peerId) => {
-            if (peerId !== myId && peer.status === 'searching') {
-                // Simple logic: first one found is the opponent
-                onMatchFound({
-                    id: peerId,
-                    name: peer.username
-                });
-                
-                // Update status to matched
-                matchmaking.get(myId).put({ status: 'matched', opponent: peerId });
-            }
-        });
-    },
+    // Initialiser la 3D (Graphics.js)
+    const sceneLoaded = initGraphics();
 
-    /**
-     * Sync game state (Position, Health, etc.)
-     * @param {string} gameId 
-     * @param {Object} state 
-     */
-    syncGameState(gameId, state) {
-        gun.get('games').get(gameId).put(state);
-    },
+    if (sceneLoaded) {
+        // Initialiser la logique des cartes et du combat (Gameplay.js)
+        initGameLogic();
 
-    /**
-     * Listen for game state updates
-     * @param {string} gameId 
-     * @param {Function} callback 
-     */
-    onGameStateUpdate(gameId, callback) {
-        gun.get('games').get(gameId).on(callback);
+        // Lancer la boucle de rendu
+        animate();
+
+        console.log("✨ Aether Lords est prêt !");
+        setTimeout(() => showLoading(false), 1000);
     }
-};
+}
+
+/**
+ * Affiche ou cache l'écran de chargement
+ */
+function showLoading(state) {
+    if (loadingScreen) {
+        loadingScreen.style.display = state ? 'flex' : 'none';
+    }
+}
