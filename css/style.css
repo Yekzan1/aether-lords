@@ -1,0 +1,150 @@
+/* AETHER LORDS - Styles */
+:root {
+    --neon-blue: #00ffff;
+    --neon-pink: #ff00ff;
+    --glass: rgba(255, 255, 255, 0.1);
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #050510;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
+}
+
+#ui-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Glassmorphism Panels */
+.glass-panel {
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 20px;
+    pointer-events: auto;
+}
+
+/* Login Screen */
+#login-screen {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    text-align: center;
+    box-shadow: 0 0 20px var(--neon-blue);
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--neon-blue);
+    color: white;
+    border-radius: 5px;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background: var(--neon-blue);
+    border: none;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: 0.3s;
+}
+
+button:hover {
+    box-shadow: 0 0 15px var(--neon-blue);
+}
+
+/* Game HUD */
+#hud {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    pointer-events: auto;
+}
+
+.card {
+    width: 80px;
+    height: 110px;
+    background: var(--glass);
+    border: 2px solid var(--neon-blue);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    background: rgba(0, 255, 255, 0.2);
+}
+
+.mana-bar {
+    position: absolute;
+    bottom: 140px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 350px;
+    height: 10px;
+    background: #222;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+#mana-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0088ff, #00ffff);
+    width: 50%;
+    transition: width 0.1s;
+}
+
+/* Health Bars (Floating) */
+.health-bar {
+    position: absolute;
+    width: 50px;
+    height: 6px;
+    background: #000;
+    border: 1px solid #fff;
+    pointer-events: none;
+}
+
+.health-fill {
+    height: 100%;
+}
+
+/* Animations */
+@keyframes pulse {
+    0% { opacity: 0.8; }
+    50% { opacity: 1; }
+    100% { opacity: 0.8; }
+}
+
+.neon-text {
+    text-shadow: 0 0 10px var(--neon-blue);
+    animation: pulse 2s infinite;
+}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AETHER LORDS | RTS Mobile</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Gun.js Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script>
+</head>
+<body>
+    <div id="ui-overlay">
+        <!-- Login Screen -->
+        <div id="login-screen" class="glass-panel">
+            <h1 class="neon-text">AETHER LORDS</h1>
+            <p>Enter the Void</p>
+            <input type="email" id="email" placeholder="Email / Username">
+            <input type="password" id="password" placeholder="Password">
+            <button id="btn-login">ENTER ARENA</button>
+        </div>
+
+        <!-- Game HUD (Hidden by default) -->
+        <div id="game-hud" style="display: none;">
+            <div class="mana-bar">
+                <div id="mana-fill"></div>
+            </div>
+            <div id="hud">
+                <!-- Cards will be injected here -->
+            </div>
+            <div id="aether-counter" style="position: absolute; top: 20px; right: 20px; font-size: 24px;" class="neon-text">
+                Aether: <span id="aether-val">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Entry Point -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
